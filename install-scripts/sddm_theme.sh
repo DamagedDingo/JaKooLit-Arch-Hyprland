@@ -1,11 +1,36 @@
 #!/bin/bash
-# 💫 https://github.com/JaKooLit 💫 #
-# SDDM themes #
+#: <<'EOF'
+=========================================================================================================
+Author:       JaKooLit
+Repository:   https://github.com/JaKooLit/
+Description:  
+    - Downloads and installs the SDDM theme "sequoia_2" from JaKooLits repository.
+    - Customises the configuration files and primes it to be able to update the wallpaper.
+==========================================================================================================
+EOF
 
+# ---------------------------------------------------------------------------------------------------------
+# 🔸 User Configuration Zone:
+# --------------------------------------------------------------------------------------------------------
+
+# Source URL for the theme.
 source_theme="https://codeberg.org/JaKooLit/sddm-sequoia"
-theme_name="sequoia_2"
 
-## WARNING: DO NOT EDIT BEYOND THIS LINE IF YOU DON'T KNOW WHAT YOU ARE DOING! ##
+# New name for the SDDM theme.
+theme_name="sequoia_2" # New name for the SDDM theme.
+
+
+# --------------------------------------------------------------------------------------------------------
+# ⚠️ Beginning System Configuration Zone: 
+# --------------------------------------------------------------------------------------------------------
+# The code below contains critical logic for the script's functionality.
+# Editing this section without understanding its purpose may cause the script to fail.
+# ---------------------------------------------------------------------------------------------------------
+
+
+# ----- Variables -----------------------------------------------------------------------------------------
+
+# Set the script directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Change the working directory to the parent directory of the script
@@ -18,10 +43,13 @@ if ! source "$(dirname "$(readlink -f "$0")")/Global_functions.sh"; then
   exit 1
 fi
 
+# ----- Logging ------------------------------------------------------------------------------------------
 
 # Set the name of the log file to include the current date and time
 LOG="Install-Logs/install-$(date +%d-%H%M%S)_sddm_theme.log"
-    
+
+# ----- Theme Installation --------------------------------------------------------------------------------
+
 # SDDM-themes
 printf "${INFO} Installing ${SKY_BLUE}Additional SDDM Theme${RESET}\n"
 
@@ -52,12 +80,13 @@ if git clone --depth=1 "$source_theme" "$theme_name"; then
   # Move cloned theme to the themes directory
   sudo mv "$theme_name" "/usr/share/sddm/themes/$theme_name" 2>&1 | tee -a "$LOG"
 
+# ----- SDDM Configuration --------------------------------------------------------------------------------
 
-  # setting up SDDM theme
+  # Initialising the SDDM theme
   sddm_conf_dir="/etc/sddm.conf.d"
   BACKUP_SUFFIX=".bak"
   
-  echo -e "${NOTE} Setting up the login screen." | tee -a "$LOG"
+  echo -e "${NOTE} Initialising the login screen and applying the new theme." | tee -a "$LOG"
 
   if [ -d "$sddm_conf_dir" ]; then
     echo "Backing up files in $sddm_conf_dir" | tee -a "$LOG"
@@ -83,9 +112,11 @@ if git clone --depth=1 "$source_theme" "$theme_name"; then
     sudo mkdir -p "$sddm_conf_dir" 2>&1 | tee -a "$LOG"
   fi
 
+  # Check if the theme.conf.user file exists, if not create it
   if [ ! -f "$sddm_conf_dir/theme.conf.user" ]; then
     echo -e "[Theme]\nCurrent = $theme_name" | sudo tee "$sddm_conf_dir/theme.conf.user" > /dev/null
     
+    # Check if the file was created successfully
     if [ -f "$sddm_conf_dir/theme.conf.user" ]; then
       echo "Created and configured $sddm_conf_dir/theme.conf.user with theme $theme_name" | tee -a "$LOG"
     else
@@ -95,9 +126,11 @@ if git clone --depth=1 "$source_theme" "$theme_name"; then
     echo "$sddm_conf_dir/theme.conf.user already exists, skipping creation." | tee -a "$LOG"
   fi
 
-  # Replace current background from assets
-  sudo cp -r assets/sddm.png "/usr/share/sddm/themes/$theme_name/backgrounds/default" 2>&1 | tee -a "$LOG"
-  sudo sed -i 's|^wallpaper=".*"|wallpaper="backgrounds/default"|' "/usr/share/sddm/themes/$theme_name/theme.conf" 2>&1 | tee -a "$LOG"
+# ----- Wallpaper Configuration --------------------------------------------------------------------------
+
+  # Replace the themes default wallpaper with JaKooLit's initial wallpaper.
+  sudo cp -r assets/sddm.png "/usr/share/sddm/themes/$theme_name/backgrounds/.wallpaper_current" 2>&1 | tee -a "$LOG"
+  sudo sed -i 's|^wallpaper=".*"|wallpaper="backgrounds/.wallpaper_current"|' "/usr/share/sddm/themes/$theme_name/theme.conf" 2>&1 | tee -a "$LOG"
 
   echo "${OK} - ${MAGENTA}Additional SDDM Theme${RESET} successfully installed." | tee -a "$LOG"
 
@@ -106,5 +139,6 @@ else
   echo "${ERROR} - Failed to clone the sddm theme repository. Please check your internet connection." | tee -a "$LOG" >&2
 fi
 
+# ----- Finalization -------------------------------------------------------------------------------------
 
 printf "\n%.0s" {1..2}
