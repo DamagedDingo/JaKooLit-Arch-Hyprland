@@ -34,7 +34,7 @@ PARENT_DIR="$SCRIPT_DIR/.."
 cd "$PARENT_DIR" || { echo "${ERROR} Failed to change directory to $PARENT_DIR"; exit 1; }
 
 # Source the global functions script
-source "$(dirname "$(readlink -f "$0")")/Global_functions.sh"
+source "$(dirname "$(readlink -f "$0")")/functions/global_functions.sh"
 
 # Set the name of the log file to include the current date and time
 LOG="Install-Logs/00_CHECK-$(date +%d-%H%M%S)_installed.log"
